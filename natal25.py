@@ -1,6 +1,10 @@
 import streamlit as st
+import requests
 
 st.set_page_config(page_title="Convite de Natal 🎄", page_icon="🎄")
+
+# URL DO SEU APPS SCRIPT
+APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXWCrOIadIbNE87sgAkmTjSS-FqTytD5n2hBrEILnYoIVujDxMe6gZ8wxGijdAp3uZ6A/exec"
 
 # --- BACKGROUND COM CORES NATALINAS ---
 page_bg = """
@@ -11,8 +15,6 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
 }
-
-/* Caixa branca no centro */
 .main-container {
     background: rgba(255, 255, 255, 0.90);
     padding: 25px;
@@ -20,12 +22,9 @@ body {
     box-shadow: 0 0 18px rgba(0,0,0,0.25);
     margin-top: 20px;
 }
-
-/* Enfeites natalinos */
 h1, h2 {
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
-
 .natal-icon {
     font-size: 32px;
     margin-right: 10px;
@@ -34,8 +33,6 @@ h1, h2 {
 """
 
 st.markdown(page_bg, unsafe_allow_html=True)
-
-# Wrapper manual
 st.markdown("<div class='main-container'>", unsafe_allow_html=True)
 
 # ---- TÍTULO ----
@@ -48,7 +45,6 @@ st.markdown("""
         <span class='natal-icon'>❄️🕯️🌟</span>
     </div>
 """, unsafe_allow_html=True)
-
 
 # ---- FORMULÁRIO ----
 with st.form("formulario_natal"):
@@ -69,50 +65,56 @@ with st.form("formulario_natal"):
     if qtd_adultos > 0:
         with st.expander("👨‍🦳 Nomes dos adultos"):
             for i in range(qtd_adultos):
-                nome_adulto = st.text_input(
-                    f"Nome do adulto {i+1}:",
-                    key=f"adulto_nome_{i}"
-                )
+                nome_adulto = st.text_input(f"Nome do adulto {i+1}:", key=f"adulto_nome_{i}")
                 adultos_nomes.append(nome_adulto)
 
     criancas_nomes = []
     if qtd_criancas > 0:
         with st.expander("👶 Nomes das crianças"):
             for i in range(qtd_criancas):
-                nome_crianca = st.text_input(
-                    f"Nome da criança {i+1}:",
-                    key=f"crianca_nome_{i}"
-                )
+                nome_crianca = st.text_input(f"Nome da criança {i+1}:", key=f"crianca_nome_{i}")
                 criancas_nomes.append(nome_crianca)
 
     st.write("---")
 
-    # AMIGO DOCE
-    amigo_doce = st.radio(
-        "🍫 Você vai participar do *Amigo Doce*?",
-        ["Não", "Sim"]
-    )
+    amigo_doce = st.radio("🍫 Você vai participar do *Amigo Doce*?", ["Não", "Sim"])
 
     if amigo_doce == "Sim":
         st.info("Para participar, é necessário **dez reais físico e uma barra de chocolate por pessoa!** 🍫")
 
     enviado = st.form_submit_button("🎁 Enviar confirmação")
 
-
-# ---- RESPOSTA APÓS ENVIO ----
+# ---- SE ENVIOU, ENVIA PARA O APPS SCRIPT ----
 if enviado:
-    st.success("🎄 Sua confirmação foi enviada com sucesso! Obrigada ❤️")
+
+    dados = {
+        "nome_principal": nome_principal,
+        "item": item,
+        "qtd_adultos": qtd_adultos,
+        "adultos_nomes": adultos_nomes,
+        "qtd_criancas": qtd_criancas,
+        "criancas_nomes": criancas_nomes,
+        "amigo_doce": amigo_doce
+    }
+
+    try:
+        r = requests.post(APPS_SCRIPT_URL, json=dados)
+        if r.status_code == 200:
+            st.success("🎄 Sua confirmação foi enviada e salva no Google Sheets!")
+        else:
+            st.error("Erro ao enviar: " + r.text)
+    except Exception as e:
+        st.error("Falha ao conectar ao Google Sheets: " + str(e))
 
     st.write("## 🌟 Resumo:")
-
     st.write(f"**Nome:** {nome_principal}")
     st.write(f"**Vai levar:** {item}")
 
-    st.write(f"### 👨‍👩‍👧‍👦 Adultos ({qtd_adultos}):")
+    st.write(f"### Adultos ({qtd_adultos}):")
     for nome in adultos_nomes:
         st.write(f"- {nome}")
 
-    st.write(f"### 🧸 Crianças ({qtd_criancas}):")
+    st.write(f"### Crianças ({qtd_criancas}):")
     for nome in criancas_nomes:
         st.write(f"- {nome}")
 
@@ -122,5 +124,4 @@ if enviado:
 
     st.warning("⚠ É obrigatório participar de no mínimo 1 a 2 brincadeiras.")
 
-# fecha caixa branca
 st.markdown("</div>", unsafe_allow_html=True)
