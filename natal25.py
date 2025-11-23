@@ -6,8 +6,10 @@ st.set_page_config(page_title="Convite de Natal 🎄", page_icon="🎄")
 page_bg = """
 <style>
 body {
-    background: linear-gradient(180deg, #b30000, #ffffff, #006400);
+    background: linear-gradient(180deg, #b30000, #ffffff, #006400); /* vermelho, branco e verde */
     background-attachment: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 
 /* Caixa branca no centro */
