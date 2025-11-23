@@ -1,50 +1,126 @@
 import streamlit as st
-import gspread
-from google.oauth2.service_account import Credentials
 
-st.set_page_config(page_title="Convite de Natal", page_icon="🎄")
+st.set_page_config(page_title="Convite de Natal 🎄", page_icon="🎄")
 
-# ----------------------------
-#  Conexão com a Google Sheet
-# ----------------------------
-SCOPE = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
+# --- BACKGROUND COM CORES NATALINAS ---
+page_bg = """
+<style>
+body {
+    background: linear-gradient(180deg, #b30000, #ffffff, #006400);
+    background-attachment: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
 
-creds = Credentials.from_service_account_file("service_account.json", scopes=SCOPE)
-client = gspread.authorize(creds)
+/* Caixa branca no centro */
+.main-container {
+    background: rgba(255, 255, 255, 0.90);
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 0 18px rgba(0,0,0,0.25);
+    margin-top: 20px;
+}
 
-# Abra sua planilha pelo ID
-SHEET_ID = "13T_5ziIDF_VjO5ngBFvD4RmVyOoUTu9yhelQ-h8rKnI"
-sheet = client.open_by_key(SHEET_ID).sheet1
+/* Enfeites natalinos */
+h1, h2 {
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
 
-# ----------------------------
-#     INTERFACE DO SITE
-# ----------------------------
+.natal-icon {
+    font-size: 32px;
+    margin-right: 10px;
+}
+</style>
+"""
 
+st.markdown(page_bg, unsafe_allow_html=True)
+
+# Wrapper manual
+st.markdown("<div class='main-container'>", unsafe_allow_html=True)
+
+# ---- TÍTULO ----
 st.markdown("""
-<h1 style="text-align:center; color:white;">🎄 Bem vindo à Andleide 🎄</h1>
-<p style="text-align:center; color:white; font-size:18px;">
-Confirme sua presença e diga o que irá levar!
-</p>
+    <div style='text-align:center;'>
+        <span class='natal-icon'>🎄✨🎅</span>
+        <h1 style='color:#b30000;'>Convite de Natal</h1>
+        <h2>Bem vindo a Andleide 🎁</h2>
+        <p style='font-size:18px;'>Preencha abaixo sua confirmação para nossa noite especial!</p>
+        <span class='natal-icon'>❄️🕯️🌟</span>
+    </div>
 """, unsafe_allow_html=True)
 
-with st.form("formulario"):
-    nome = st.text_input("Seu nome:")
-    levar = st.text_input("O que você vai levar?")
-    amigo_doce = st.selectbox("Você vai participar do Amigo Doce?", ["Sim", "Não"])
-    enviado = st.form_submit_button("Enviar")
 
+# ---- FORMULÁRIO ----
+with st.form("formulario_natal"):
+
+    st.subheader("🎅 Informações Principais")
+
+    nome_principal = st.text_input("Seu nome:")
+    item = st.text_input("O que você vai levar:")
+
+    st.write("### 🎄 Quantas pessoas irão?")
+
+    qtd_adultos = st.number_input("Adultos:", min_value=0, step=1)
+    qtd_criancas = st.number_input("Crianças:", min_value=0, step=1)
+
+    st.write("---")
+
+    adultos_nomes = []
+    if qtd_adultos > 0:
+        with st.expander("👨‍🦳 Nomes dos adultos"):
+            for i in range(qtd_adultos):
+                nome_adulto = st.text_input(
+                    f"Nome do adulto {i+1}:",
+                    key=f"adulto_nome_{i}"
+                )
+                adultos_nomes.append(nome_adulto)
+
+    criancas_nomes = []
+    if qtd_criancas > 0:
+        with st.expander("👶 Nomes das crianças"):
+            for i in range(qtd_criancas):
+                nome_crianca = st.text_input(
+                    f"Nome da criança {i+1}:",
+                    key=f"crianca_nome_{i}"
+                )
+                criancas_nomes.append(nome_crianca)
+
+    st.write("---")
+
+    # AMIGO DOCE
+    amigo_doce = st.radio(
+        "🍫 Você vai participar do *Amigo Doce*?",
+        ["Não", "Sim"]
+    )
+
+    if amigo_doce == "Sim":
+        st.info("Para participar, é necessário **dez reais físico e uma barra de chocolate por pessoa!** 🍫")
+
+    enviado = st.form_submit_button("🎁 Enviar confirmação")
+
+
+# ---- RESPOSTA APÓS ENVIO ----
 if enviado:
-    # Adiciona os dados na planilha
-    sheet.append_row([nome, levar, amigo_doce])
+    st.success("🎄 Sua confirmação foi enviada com sucesso! Obrigada ❤️")
 
-    st.success("🎉 Seus dados foram enviados com sucesso!")
-    st.balloons()
+    st.write("## 🌟 Resumo:")
 
-st.markdown("""
-<p style="margin-top:40px; color:white; text-align:center;">
-É obrigatório participar de 1 a 2 brincadeiras! 🎁
-</p>
-""", unsafe_allow_html=True)
+    st.write(f"**Nome:** {nome_principal}")
+    st.write(f"**Vai levar:** {item}")
+
+    st.write(f"### 👨‍👩‍👧‍👦 Adultos ({qtd_adultos}):")
+    for nome in adultos_nomes:
+        st.write(f"- {nome}")
+
+    st.write(f"### 🧸 Crianças ({qtd_criancas}):")
+    for nome in criancas_nomes:
+        st.write(f"- {nome}")
+
+    st.write(f"### 🍫 Amigo Doce: **{amigo_doce}**")
+    if amigo_doce == "Sim":
+        st.write("➡ Será necessário R$10 e 1 barra de chocolate por pessoa.")
+
+    st.warning("⚠ É obrigatório participar de no mínimo 1 a 2 brincadeiras.")
+
+# fecha caixa branca
+st.markdown("</div>", unsafe_allow_html=True)
