@@ -43,7 +43,7 @@ st.markdown("""
     <div style='text-align:center;'>
         <span class='natal-icon'>🎄✨🎅</span>
         <h1 style='color:#b30000;'>Convite de Natal</h1>
-        <h2>Bem vindo a Andleide 🎁</h2>
+        <h2>Bem vindo a Andeleide 🎁</h2>
         <p style='font-size:18px;'>Preencha abaixo sua confirmação para nossa noite especial!</p>
         <span class='natal-icon'>❄️🕯️🌟</span>
     </div>
