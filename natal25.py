@@ -2,72 +2,49 @@ import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
 
-# --- CONFIG GOOGLE SHEETS ---
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-SPREADSHEET_ID = "13T_5ziIDF_VjO5ngBFvD4RmVyOoUTu9yhelQ-h8rKnI"
+st.set_page_config(page_title="Convite de Natal", page_icon="🎄")
 
-creds = Credentials.from_service_account_file("service_account.json", scopes=SCOPES)
+# ----------------------------
+#  Conexão com a Google Sheet
+# ----------------------------
+SCOPE = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
+creds = Credentials.from_service_account_file("service_account.json", scopes=SCOPE)
 client = gspread.authorize(creds)
-sheet = client.open_by_key(SPREADSHEET_ID).sheet1
 
+# Abra sua planilha pelo ID
+SHEET_ID = "13T_5ziIDF_VjO5ngBFvD4RmVyOoUTu9yhelQ-h8rKnI"
+sheet = client.open_by_key(SHEET_ID).sheet1
 
-# ---- FUNÇÃO PARA ENVIAR DADOS ----
-def enviar_para_planilha(
-    nome_principal, item, qtd_adultos, adultos, qtd_criancas, criancas, amigo_doce
-):
-    linha = [
-        nome_principal,
-        item,
-        qtd_adultos,
-        ", ".join(adultos) if adultos else "",
-        qtd_criancas,
-        ", ".join(criancas) if criancas else "",
-        amigo_doce
-    ]
-    sheet.append_row(linha)
+# ----------------------------
+#     INTERFACE DO SITE
+# ----------------------------
 
+st.markdown("""
+<h1 style="text-align:center; color:white;">🎄 Bem vindo à Andleide 🎄</h1>
+<p style="text-align:center; color:white; font-size:18px;">
+Confirme sua presença e diga o que irá levar!
+</p>
+""", unsafe_allow_html=True)
 
-# ---------------- SEU CÓDIGO DO SITE AQUI ------------------
+with st.form("formulario"):
+    nome = st.text_input("Seu nome:")
+    levar = st.text_input("O que você vai levar?")
+    amigo_doce = st.selectbox("Você vai participar do Amigo Doce?", ["Sim", "Não"])
+    enviado = st.form_submit_button("Enviar")
 
-st.set_page_config(page_title="Convite de Natal 🎄", page_icon="🎄")
-
-# --- FORMULÁRIO ---
-with st.form("formulario_natal"):
-    st.subheader("🎅 Informações Principais")
-
-    nome_principal = st.text_input("Seu nome:")
-    item = st.text_input("O que você vai levar:")
-
-    st.write("### 🎄 Quantas pessoas irão?")
-    qtd_adultos = st.number_input("Adultos:", min_value=0, step=1)
-    qtd_criancas = st.number_input("Crianças:", min_value=0, step=1)
-
-    adultos_nomes = []
-    if qtd_adultos > 0:
-        for i in range(qtd_adultos):
-            adultos_nomes.append(st.text_input(f"Nome do adulto {i+1}:", key=f"adulto_{i}"))
-
-    criancas_nomes = []
-    if qtd_criancas > 0:
-        for i in range(qtd_criancas):
-            criancas_nomes.append(st.text_input(f"Nome da criança {i+1}:", key=f"crianca_{i}"))
-
-    amigo_doce = st.radio("🍫 Você vai participar do Amigo Doce?", ["Não", "Sim"])
-
-    enviado = st.form_submit_button("🎁 Enviar confirmação")
-
-# ---- QUANDO O USUÁRIO ENVIAR ----
 if enviado:
-    st.success("🎄 Confirmação enviada!")
+    # Adiciona os dados na planilha
+    sheet.append_row([nome, levar, amigo_doce])
 
-    enviar_para_planilha(
-        nome_principal,
-        item,
-        qtd_adultos,
-        adultos_nomes,
-        qtd_criancas,
-        criancas_nomes,
-        amigo_doce
-    )
+    st.success("🎉 Seus dados foram enviados com sucesso!")
+    st.balloons()
 
-    st.info("Os dados foram enviados automaticamente para a planilha ✔")
+st.markdown("""
+<p style="margin-top:40px; color:white; text-align:center;">
+É obrigatório participar de 1 a 2 brincadeiras! 🎁
+</p>
+""", unsafe_allow_html=True)
