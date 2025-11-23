@@ -6,7 +6,7 @@ st.set_page_config(page_title="Convite de Natal 🎄", page_icon="🎄")
 page_bg = """
 <style>
 body {
-    background: linear-gradient(180deg, #b30000, #ffffff, #006400); /* vermelho, branco e verde */
+    background: linear-gradient(180deg, #b30000, #ffffff, #006400);
     background-attachment: fixed;
     background-size: cover;
     background-repeat: no-repeat;
@@ -35,7 +35,7 @@ h1, h2 {
 
 st.markdown(page_bg, unsafe_allow_html=True)
 
-# Wrapper manual (caixa branca)
+# Wrapper manual
 st.markdown("<div class='main-container'>", unsafe_allow_html=True)
 
 # ---- TÍTULO ----
@@ -67,23 +67,29 @@ with st.form("formulario_natal"):
 
     adultos_nomes = []
     if qtd_adultos > 0:
-        st.write("### 👨‍🦳 Nomes dos adultos")
-        for i in range(qtd_adultos):
-            nome_adulto = st.text_input(f"Nome do adulto {i+1}:", key=f"adulto_{i}")
-            adultos_nomes.append(nome_adulto)
+        with st.expander("👨‍🦳 Nomes dos adultos"):
+            for i in range(qtd_adultos):
+                nome_adulto = st.text_input(
+                    f"Nome do adulto {i+1}:",
+                    key=f"adulto_nome_{i}"
+                )
+                adultos_nomes.append(nome_adulto)
 
     criancas_nomes = []
     if qtd_criancas > 0:
-        st.write("### 👶 Nomes das crianças")
-        for i in range(qtd_criancas):
-            nome_crianca = st.text_input(f"Nome da criança {i+1}:", key=f"crianca_{i}")
-            criancas_nomes.append(nome_crianca)
+        with st.expander("👶 Nomes das crianças"):
+            for i in range(qtd_criancas):
+                nome_crianca = st.text_input(
+                    f"Nome da criança {i+1}:",
+                    key=f"crianca_nome_{i}"
+                )
+                criancas_nomes.append(nome_crianca)
 
     st.write("---")
 
     # AMIGO DOCE
     amigo_doce = st.radio(
-        "🍫 Você vai participar do *Amigo Doce*? (A barra e os R$10 são por pessoa, não por família)",
+        "🍫 Você vai participar do *Amigo Doce*?",
         ["Não", "Sim"]
     )
 
