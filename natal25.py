@@ -1,94 +1,63 @@
 import streamlit as st
-import pandas as pd
-import os
 
-st.set_page_config(page_title="Convite de Natal 🎄", page_icon="🎄", layout="centered")
+st.set_page_config(page_title="Convite de Natal 🎄", page_icon="🎄")
 
-# -------------------- ARQUIVO CSV --------------------
-CSV_PATH = "convidados.csv"
-
-if not os.path.exists(CSV_PATH):
-    pd.DataFrame(columns=["nome", "item", "amigo_doce"]).to_csv(CSV_PATH, index=False)
-
-def salvar_resposta(nome, item, amigo_doce):
-    df = pd.read_csv(CSV_PATH)
-    df.loc[len(df)] = [nome, item, amigo_doce]
-    df.to_csv(CSV_PATH, index=False)
-
-
-# -------------------- ESTILO CSS --------------------
+# ---- TÍTULO E TEMA ----
 st.markdown("""
-<style>
-body {
-    background: linear-gradient(180deg, #b30000, #ffffff, #006400) !important;
-}
-.convite-box {
-    background: rgba(255, 248, 240, 0.95);
-    padding: 25px;
-    border-radius: 20px;
-    border: 4px solid green;
-    box-shadow: 0 0 25px rgba(0,0,0,0.4);
-}
-.title {
-    color: darkred;
-    font-size: 2.6em;
-    text-shadow: 2px 2px 6px #fff;
-    text-align: center;
-}
-.boasvindas {
-    color: green;
-    font-size: 1.6em;
-    text-shadow: 1px 1px 3px #fff;
-    text-align: center;
-}
-.aviso {
-    color: darkred;
-    font-weight: bold;
-    text-align: center;
-    font-size: 1.1em;
-}
-</style>
+    <h1 style='text-align:center; color:#b30000;'>Convite de Natal 🎄</h1>
+    <h2 style='text-align:center;'>Bem vindo a Andleide</h2>
+    <p style='text-align:center; font-size:18px;'>Preencha o formulário abaixo para confirmar sua presença.</p>
 """, unsafe_allow_html=True)
 
 
-# -------------------- CAIXA DO CONVITE --------------------
-st.markdown("<div class='convite-box'>", unsafe_allow_html=True)
+# ---- FORMULÁRIO ----
+with st.form("formulario_natal"):
 
-st.markdown("<h1 class='title'>🎄 Convite Especial de Natal 🎅</h1>", unsafe_allow_html=True)
-st.markdown("<p class='boasvindas'>✨ Bem vindo a Andleide ✨</p>", unsafe_allow_html=True)
-st.markdown("<p class='aviso'>⚠️ É obrigatório participar de no mínimo 1 a 2 brincadeiras!</p>", unsafe_allow_html=True)
+    st.subheader("Informações principais")
 
-st.write("Você está convidado para nossa festa de Natal! ✨")
-st.write("Preencha o formulário para confirmar sua presença:")
+    nome_principal = st.text_input("Seu nome:")
+    item = st.text_input("O que você vai levar:")
 
-# -------------------- FORMULÁRIO --------------------
-with st.form("formulario"):
-    nome = st.text_input("Seu nome")
-    item = st.text_input("O que você vai levar?")
-    amigo_doce = st.selectbox("Vai participar do Amigo Doce?", ["Selecione", "Sim", "Não"])
+    st.write("### Quantas pessoas irão?")
 
-    enviado = st.form_submit_button("Confirmar")
+    qtd_adultos = st.number_input("Quantidade de adultos:", min_value=0, step=1)
+    qtd_criancas = st.number_input("Quantidade de crianças:", min_value=0, step=1)
 
-    if enviado:
-        if nome == "" or item == "" or amigo_doce == "Selecione":
-            st.error("Por favor, preencha todos os campos!")
-        else:
-            salvar_resposta(nome, item, amigo_doce)
-            st.success("Presença confirmada com sucesso! 🎄✨")
+    st.write("---")
 
-st.markdown("</div>", unsafe_allow_html=True)
+    # ---- CAMPOS PARA NOMES DOS ADULTOS ----
+    adultos_nomes = []
+    if qtd_adultos > 0:
+        st.write("### Nomes dos adultos")
+        for i in range(qtd_adultos):
+            nome_adulto = st.text_input(f"Nome do adulto {i+1}:", key=f"adulto_{i}")
+            adultos_nomes.append(nome_adulto)
+
+    # ---- CAMPOS PARA NOMES DAS CRIANÇAS ----
+    criancas_nomes = []
+    if qtd_criancas > 0:
+        st.write("### Nomes das crianças")
+        for i in range(qtd_criancas):
+            nome_crianca = st.text_input(f"Nome da criança {i+1}:", key=f"crianca_{i}")
+            criancas_nomes.append(nome_crianca)
+
+    enviado = st.form_submit_button("Enviar confirmação 🎄")
 
 
-# -------------------- LISTA DE CONVIDADOS --------------------
-st.markdown("## 🎁 Lista de Convidados")
+# ---- RESPOSTA APÓS ENVIO ----
+if enviado:
+    st.success("✔ Confirmação enviada com sucesso!")
 
-df = pd.read_csv(CSV_PATH)
+    st.write("## 🎁 Resumo da sua confirmação")
+    st.write(f"**Nome:** {nome_principal}")
+    st.write(f"**Levará:** {item}")
 
-if len(df) == 0:
-    st.info("Nenhum convidado confirmou presença ainda.")
-else:
-    for i, row in df.iterrows():
-        if row["amigo_doce"] == "Sim":
-            st.write(f"**{row['nome']}** vai levar: **{row['item']}** + (Doce obrigatório + R$10 para o Amigo Doce)")
-        else:
-            st.write(f"**{row['nome']}** vai levar: **{row['item']}**")
+    st.write(f"**Adultos ({qtd_adultos}):**")
+    for nome in adultos_nomes:
+        st.write(f"- {nome}")
+
+    st.write(f"**Crianças ({qtd_criancas}):**")
+    for nome in criancas_nomes:
+        st.write(f"- {nome}")
+
+    st.warning("⚠ É obrigatório participar de no mínimo 1 a 2 brincadeiras.")
